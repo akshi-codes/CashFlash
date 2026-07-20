@@ -1,0 +1,55 @@
+# CashFlash CI/CD pipeline
+# The security templates publish findings to GitLab's security dashboards.
+
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.v2.gitlab-ci.yml
+
+default:
+  interruptible: true
+
+stages:
+  - build
+  - test
+
+backend-build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-21
+  script:
+    - mvn --batch-mode --no-transfer-progress -f CashflashBackend/cashflash-main-service/pom.xml package -DskipTests
+    - mvn --batch-mode --no-transfer-progress -f CashflashBackend/cashflash-psp-service/pom.xml package -DskipTests
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - CashflashBackend/cashflash-main-service/target/*.jar
+      - CashflashBackend/cashflash-psp-service/target/*.jar
+
+backend-test:
+  stage: test
+  image: maven:3.9-eclipse-temurin-21
+  script:
+    - mvn --batch-mode --no-transfer-progress -f CashflashBackend/cashflash-main-service/pom.xml test
+    - mvn --batch-mode --no-transfer-progress -f CashflashBackend/cashflash-psp-service/pom.xml test
+
+frontend-build:
+  stage: build
+  image: node:22-bookworm-slim
+  before_script:
+    - cd CashflashFrontend/frontend
+    - npm ci --no-audit --no-fund
+  script:
+    - npm run build
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - CashflashFrontend/frontend/dist/
+
+frontend-lint:
+  stage: test
+  image: node:22-bookworm-slim
+  before_script:
+    - cd CashflashFrontend/frontend
+    - npm ci --no-audit --no-fund
+  script:
+    - npm run lint
