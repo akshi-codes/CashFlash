@@ -1,93 +1,160 @@
-# CashFlash - The payments app
+﻿# CashFlash
 
+CashFlash is a full-stack digital wallet and payments application. It combines a React/Vite web client with Java 21 Spring Boot services for wallet operations, payment methods, transactions, KYC, notifications, and PSP-backed card/bank-account verification.
 
+## Features
 
-## Getting started
+- User registration, OTP verification, login, password reset, and PIN flows
+- Wallet top-up, withdrawal, peer-to-peer transfers, transaction history, and audit logging
+- Card and bank-account payment methods with a separate PSP service
+- Payment requests, contacts, trusted contacts, notifications, and WebSocket updates
+- KYC document upload and admin review workflows
+- Merchant upgrade and admin dashboards
+- Optional AI assistant for chat, recommendations, and voice-based send-money parsing
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Architecture
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+| Component | Location | Default port |
+| --- | --- | ---: |
+| Main Spring Boot service | `CashflashBackend/cashflash-main-service` | `8080` |
+| PSP Spring Boot service | `CashflashBackend/cashflash-psp-service` | `8082` |
+| React/Vite frontend | `CashflashFrontend/frontend` | `5173` |
+| Optional Python AI service | `CashflashFrontend/tools/ai` | configured by environment |
 
-## Add your files
+The main service calls the PSP service for payment-method verification and balance operations. Both Java services use MySQL and externalized environment variables.
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## Requirements
 
+- Java 21
+- Maven 3.9+ or the Maven Wrapper included in each backend service
+- Node.js 22+ and npm
+- MySQL 8+
+- Python 3.11+ only when running the optional AI service
+- Ollama and the configured local model only when using AI chat/recommendation features
+
+## Local setup
+
+### 1. Configure the backend
+
+Create `CashflashBackend/.env` locally. This file is intentionally ignored by Git. At minimum, configure the database credentials, JWT secret, and PSP URL:
+
+```properties
+SPRING_DATASOURCE_MAIN_URL=jdbc:mysql://localhost:3306/cashflashdb?useSSL=false&serverTimezone=UTC
+SPRING_DATASOURCE_MAIN_USERNAME=root
+SPRING_DATASOURCE_MAIN_PASSWORD=change-me
+SPRING_DATASOURCE_PSP_URL=jdbc:mysql://localhost:3306/cashflash_pspdb?useSSL=false&serverTimezone=UTC
+SPRING_DATASOURCE_PSP_USERNAME=root
+SPRING_DATASOURCE_PSP_PASSWORD=change-me
+JWT_SECRET=replace-with-a-long-random-secret
+PSP_BASE_URL=http://localhost:8082
 ```
-cd existing_repo
-git remote add origin https://gitlab.endava.com/Akshay.Maruti/cashflash-the-payments-app.git
-git branch -M main
-git push -uf origin main
+
+Create the databases before starting the services:
+
+```sql
+CREATE DATABASE cashflashdb;
+CREATE DATABASE cashflash_pspdb;
 ```
 
-## Integrate with your tools
+Do not commit real passwords, JWT secrets, API keys, KYC documents, or uploaded profile files.
 
-* [Set up project integrations](https://gitlab.endava.com/Akshay.Maruti/cashflash-the-payments-app/-/settings/integrations)
+### 2. Start the PSP service
 
-## Collaborate with your team
+```powershell
+cd CashflashBackend/cashflash-psp-service
+.\mvnw.cmd spring-boot:run
+```
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+### 3. Start the main service
 
-## Test and Deploy
+In a second terminal:
 
-Use the built-in continuous integration in GitLab.
+```powershell
+cd CashflashBackend/cashflash-main-service
+.\mvnw.cmd spring-boot:run
+```
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+### 4. Start the frontend
 
-***
+In a third terminal:
 
-# Editing this README
+```powershell
+cd CashflashFrontend/frontend
+npm ci
+npm run dev
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Open the URL printed by Vite, normally `http://localhost:5173`.
 
-## Suggestions for a good README
+### 5. Optional AI service
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+```powershell
+cd CashflashFrontend/tools/ai
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python ai_chat_api.py
+```
 
-## Name
-Choose a self-explaining name for your project.
+Configure the AI service environment separately and keep its `.env` file out of Git.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+## Useful commands
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+From `CashflashFrontend/frontend`:
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```powershell
+npm run build
+npm run lint
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+From either backend service directory:
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```powershell
+.\mvnw.cmd test
+.\mvnw.cmd package
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## GitLab CI/CD
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+The root [`.gitlab-ci.yml`](.gitlab-ci.yml) runs:
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+- GitLab SAST
+- GitLab secret detection
+- GitLab dependency scanning
+- Maven build and tests for both Spring Boot services
+- Frontend dependency installation, build, and lint
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Security findings are published in GitLab’s pipeline and vulnerability views. Generated build output, local dependencies, environment files, bundled JDK files, and runtime uploads are excluded by [`.gitignore`](.gitignore).
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### If a pipeline is stuck
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+A job marked **pending/stuck** usually means GitLab cannot assign it to a runner; this is different from a job that starts and then fails.
 
-## License
-For open source projects, say how it is licensed.
+1. Open **Project → Settings → CI/CD → Runners**.
+2. Confirm the project has an active runner that supports Docker/container jobs.
+3. Confirm the runner is not paused, offline, locked to another project, or restricted by tags.
+4. If the runner requires tags, add the same tag under `default: tags:` in `.gitlab-ci.yml`, or register/enable an untagged runner.
+5. Retry the pipeline after the runner becomes online.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+If the page says **no runners available**, the fix is project/group runner registration or enabling the Endava shared runner; changing JavaScript or Maven code will not resolve it. If a job starts and fails, open that job’s log—the remedy will be in the log rather than runner assignment.
+
+## Repository layout
+
+```text
+CashFlash/
+├── CashflashBackend/
+│   ├── cashflash-main-service/
+│   ├── cashflash-psp-service/
+│   └── qodana.yaml
+├── CashflashFrontend/
+│   ├── frontend/
+│   └── tools/ai/
+├── Profile pics/
+├── .gitignore
+├── .gitlab-ci.yml
+└── README.md
+```
+
+## Security notes
+
+Use GitLab CI/CD variables for credentials and deployment secrets. Rotate any credential immediately if it has ever been committed or exposed. The default values in application configuration are intended only for local development and must be replaced in shared or production environments.
