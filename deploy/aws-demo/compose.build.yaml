@@ -1,0 +1,17 @@
+services:
+  psp:
+    build:
+      context: ../..
+      dockerfile: deploy/aws-demo/Dockerfile.psp
+
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/aws-demo/Dockerfile.api
+
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/aws-demo/Dockerfile.web
+      args:
+        VITE_SAME_ORIGIN_API: "true"

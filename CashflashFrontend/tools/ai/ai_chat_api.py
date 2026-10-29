@@ -53,12 +53,12 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "root")
 DB_QUERY_LIMIT = int(os.getenv("DB_QUERY_LIMIT", "10"))
 AI_PREVIEW_ROWS = int(os.getenv("AI_PREVIEW_ROWS", "10"))
 AI_HOST = os.getenv("AI_HOST", "0.0.0.0")
-AI_PORT = int(os.getenv("AI_PORT", "8001"))
+AI_PORT = int(os.getenv("AI_PORT", "28001"))
 AI_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         "AI_ALLOWED_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173",
+        "http://localhost:25174,http://localhost:25175,http://127.0.0.1:25174,http://127.0.0.1:25175",
     ).split(",")
     if origin.strip()
 ]

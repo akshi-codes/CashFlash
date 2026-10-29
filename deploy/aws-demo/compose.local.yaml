@@ -1,0 +1,8 @@
+# Local rehearsal: separate project/volumes and loopback-only HTTP.
+name: cashflash-local-demo
+services:
+  web:
+    ports: !override
+      - "127.0.0.1:25180:80"
+    volumes:
+      - ./Caddyfile.local:/etc/caddy/Caddyfile:ro

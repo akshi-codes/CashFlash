@@ -19,8 +19,9 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: env.VITE_DEV_SERVER_HOST || "0.0.0.0",
+      port: 25174,
       proxy: {
-        "/files": env.VITE_DEV_FILES_PROXY_TARGET || "http://localhost:8080",
+        "/files": env.VITE_DEV_FILES_PROXY_TARGET || "http://localhost:28080",
       },
     },
   }

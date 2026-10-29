@@ -16,10 +16,10 @@ CashFlash is a full-stack digital wallet and payments application. It combines a
 
 | Component | Location | Default port |
 | --- | --- | ---: |
-| Main Spring Boot service | `CashflashBackend/cashflash-main-service` | `8080` |
-| PSP Spring Boot service | `CashflashBackend/cashflash-psp-service` | `8082` |
-| React/Vite frontend | `CashflashFrontend/frontend` | `5173` |
-| Optional Python AI service | `CashflashFrontend/tools/ai` | configured by environment |
+| Main Spring Boot service | `CashflashBackend/cashflash-main-service` | `28080` |
+| PSP Spring Boot service | `CashflashBackend/cashflash-psp-service` | `28082` |
+| React/Vite frontend | `CashflashFrontend/frontend` | `25174` (next port if occupied) |
+| Optional Python AI service | `CashflashFrontend/tools/ai` | `28001` |
 
 The main service calls the PSP service for payment-method verification and balance operations. Both Java services use MySQL and externalized environment variables.
 
@@ -46,7 +46,7 @@ SPRING_DATASOURCE_PSP_URL=jdbc:mysql://localhost:3306/cashflash_pspdb?useSSL=fal
 SPRING_DATASOURCE_PSP_USERNAME=root
 SPRING_DATASOURCE_PSP_PASSWORD=change-me
 JWT_SECRET=replace-with-a-long-random-secret
-PSP_BASE_URL=http://localhost:8082
+PSP_BASE_URL=http://localhost:28082
 ```
 
 Create the databases before starting the services:
@@ -84,7 +84,7 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite, normally `http://localhost:5173`.
+Open the URL printed by Vite, normally `http://localhost:25174` (or `25175` if occupied).
 
 ### 5. Optional AI service
 
@@ -113,6 +113,11 @@ From either backend service directory:
 .\mvnw.cmd test
 .\mvnw.cmd package
 ```
+
+## Temporary AWS demo deployment
+
+See [`deploy/aws-demo/README.md`](deploy/aws-demo/README.md) for the AWS
+Lightsail plan, Docker Compose setup, HTTPS, cost estimate, and teardown steps.
 
 ## GitLab CI/CD
 

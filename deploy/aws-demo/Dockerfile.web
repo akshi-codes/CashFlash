@@ -1,0 +1,13 @@
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY CashflashFrontend/frontend/package.json CashflashFrontend/frontend/package-lock.json ./
+RUN npm ci
+COPY CashflashFrontend/frontend/ ./
+ARG VITE_SAME_ORIGIN_API=true
+ENV VITE_SAME_ORIGIN_API=$VITE_SAME_ORIGIN_API
+RUN npm run build
+
+FROM caddy:2.11.7-alpine
+COPY --from=build /app/dist /srv
+COPY deploy/aws-demo/Caddyfile /etc/caddy/Caddyfile
+EXPOSE 80 443

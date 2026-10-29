@@ -17,18 +17,24 @@ function buildOrigin(port) {
   return `http://${getCurrentHostname()}:${port}`;
 }
 
-const apiOrigin =
-  trimOrEmpty(import.meta.env.VITE_API_ORIGIN) || buildOrigin(8080);
-const apiBaseUrl =
-  trimOrEmpty(import.meta.env.VITE_API_BASE_URL) || `${apiOrigin}/api`;
+const sameOriginApi = import.meta.env.VITE_SAME_ORIGIN_API === "true";
+const currentOrigin =
+  typeof window === "undefined" ? "" : window.location.origin;
+const apiOrigin = sameOriginApi
+  ? currentOrigin
+  : trimOrEmpty(import.meta.env.VITE_API_ORIGIN) || buildOrigin(28080);
+const apiBaseUrl = sameOriginApi
+  ? "/api"
+  : trimOrEmpty(import.meta.env.VITE_API_BASE_URL) || `${apiOrigin}/api`;
 
 const aiOrigin =
   trimOrEmpty(import.meta.env.VITE_AI_API_BASE_URL) ||
   trimOrEmpty(import.meta.env.VITE_AI_BASE_URL) ||
-  buildOrigin(8001);
+  buildOrigin(28001);
 
-const wsUrl =
-  trimOrEmpty(import.meta.env.VITE_WS_URL) || `${apiOrigin}/websocket`;
+const wsUrl = sameOriginApi
+  ? `${currentOrigin}/websocket`
+  : trimOrEmpty(import.meta.env.VITE_WS_URL) || `${apiOrigin}/websocket`;
 
 export const runtimeConfig = {
   apiOrigin,

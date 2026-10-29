@@ -6,6 +6,7 @@ import com.endava.cashflash.constants.Literals;
 import com.endava.cashflash.constants.SecurityConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -30,6 +31,9 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${app.cors.additional-origins:}")
+    private String additionalCorsOrigins;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -66,7 +70,7 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(CorsConstants.ALLOWED_ORIGINS);
+        config.setAllowedOrigins(CorsConstants.originsWithAdditional(additionalCorsOrigins));
         config.setAllowedMethods(CorsConstants.ALLOWED_METHODS);
         config.setAllowedHeaders(CorsConstants.ALLOWED_HEADERS);
         config.setAllowCredentials(CorsConstants.ALLOW_CREDENTIALS);

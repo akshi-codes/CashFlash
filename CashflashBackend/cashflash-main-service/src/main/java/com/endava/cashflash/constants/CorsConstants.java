@@ -1,6 +1,7 @@
 package com.endava.cashflash.constants;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public final class CorsConstants {
 
@@ -8,12 +9,12 @@ public final class CorsConstants {
 
     // Allowed origins
     public static final List<String> ALLOWED_ORIGINS = List.of(
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://localhost:5175",
-            "http://172.26.204.51:5173",
-            "http://172.26.204.51:5174",
-            "http://172.26.204.51:5175"
+            "http://localhost:25174",
+            "http://localhost:25175",
+            "http://127.0.0.1:25174",
+            "http://127.0.0.1:25175",
+            "http://172.26.204.51:25174",
+            "http://172.26.204.51:25175"
     );
 
     // Allowed methods
@@ -30,4 +31,13 @@ public final class CorsConstants {
 
     // Allowed credentials
     public static final boolean ALLOW_CREDENTIALS = true;
+
+    public static List<String> originsWithAdditional(String additionalOrigins) {
+        return Stream.concat(
+                ALLOWED_ORIGINS.stream(),
+                Stream.of(additionalOrigins.split(","))
+                        .map(String::trim)
+                        .filter(origin -> !origin.isEmpty())
+        ).distinct().toList();
+    }
 }

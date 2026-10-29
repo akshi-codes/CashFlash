@@ -1,0 +1,79 @@
+name: cashflash-demo
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_APP_USER: ${MYSQL_APP_USER:?Set MYSQL_APP_USER in .env}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:?Set MYSQL_APP_PASSWORD in .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init.sh:/docker-entrypoint-initdb.d/01-create-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    mem_limit: 512m
+
+  psp:
+    image: cashflash-psp:local
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_PSP_URL: jdbc:mysql://db:3306/cashflash_pspdb?sslMode=REQUIRED&serverTimezone=UTC
+      SPRING_DATASOURCE_PSP_USERNAME: ${MYSQL_APP_USER:?Set MYSQL_APP_USER in .env}
+      SPRING_DATASOURCE_PSP_PASSWORD: ${MYSQL_APP_PASSWORD:?Set MYSQL_APP_PASSWORD in .env}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=65 -XX:+UseContainerSupport
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 384m
+
+  api:
+    image: cashflash-main:local
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_MAIN_URL: jdbc:mysql://db:3306/cashflashdb?sslMode=REQUIRED&serverTimezone=UTC
+      SPRING_DATASOURCE_MAIN_USERNAME: ${MYSQL_APP_USER:?Set MYSQL_APP_USER in .env}
+      SPRING_DATASOURCE_MAIN_PASSWORD: ${MYSQL_APP_PASSWORD:?Set MYSQL_APP_PASSWORD in .env}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      PSP_BASE_URL: http://psp:28082
+      APP_CORS_ADDITIONAL_ORIGINS: ${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN in .env}
+      APP_UPLOAD_PROFILE_DIR: /var/lib/cashflash/uploads/profile
+      APP_UPLOAD_KYC_DIR: /var/lib/cashflash/uploads/kyc
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=65 -XX:+UseContainerSupport
+    volumes:
+      - uploads_data:/var/lib/cashflash/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      psp:
+        condition: service_started
+    mem_limit: 640m
+
+  web:
+    image: cashflash-web:local
+    restart: unless-stopped
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:?Set PUBLIC_HOST in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    mem_limit: 128m
+
+volumes:
+  mysql_data:
+  uploads_data:
+  caddy_data:
+  caddy_config:

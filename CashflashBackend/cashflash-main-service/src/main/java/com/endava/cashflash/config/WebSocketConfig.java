@@ -3,6 +3,7 @@ package com.endava.cashflash.config;
 import com.endava.cashflash.constants.ApiPaths;
 import com.endava.cashflash.security.StompAuthChannelInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -17,11 +18,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompAuthChannelInterceptor stompAuthChannelInterceptor;
 
+    @Value("${app.cors.additional-origins:}")
+    private String additionalCorsOrigins;
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Registers the WebSocket endpoint for STOMP clients
         registry.addEndpoint(ApiPaths.WEBSOCKET_ENDPOINT)
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns(
+                        com.endava.cashflash.constants.CorsConstants.originsWithAdditional(additionalCorsOrigins)
+                                .toArray(String[]::new)
+                )
                 .withSockJS();
     }
 
