@@ -68,6 +68,7 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
     depends_on:
       - api
     mem_limit: 128m

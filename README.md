@@ -1,6 +1,14 @@
-﻿# CashFlash
+# CashFlash
 
-CashFlash is a full-stack digital wallet and payments application. It combines a React/Vite web client with Java 21 Spring Boot services for wallet operations, payment methods, transactions, KYC, notifications, and PSP-backed card/bank-account verification.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-https%3A%2F%2F13.238.125.86-brightgreen?style=for-the-badge&logo=google-chrome)](https://13.238.125.86)
+[![AWS Lightsail](https://img.shields.io/badge/AWS-Lightsail%20(Sydney)-232F3E?style=for-the-badge&logo=amazon-aws)](https://13.238.125.86)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-6DB33F?style=for-the-badge&logo=springboot)](https://spring.io/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+
+> **Live Application URL:** [https://13.238.125.86](https://13.238.125.86)  
+> *Deployed on AWS Lightsail with automatic HTTPS via Caddy and Let's Encrypt.*
+
+CashFlash is a full-stack digital wallet and payments application. It combines a React 19/Vite web client with Java 21 Spring Boot 4 microservices for wallet operations, payment methods, transactions, KYC, notifications, and PSP-backed card/bank-account verification.
 
 ## Features
 
@@ -154,6 +162,14 @@ CashFlash/
 ├── CashflashFrontend/
 │   ├── frontend/
 │   └── tools/ai/
+├── deploy/
+│   └── aws-demo/
+│       ├── Dockerfile.api
+│       ├── Dockerfile.psp
+│       ├── Dockerfile.web
+│       ├── compose.yaml
+│       ├── Caddyfile
+│       └── mysql-init.sh
 ├── Profile pics/
 ├── .gitignore
 ├── .gitlab-ci.yml
