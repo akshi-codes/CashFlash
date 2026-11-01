@@ -27,9 +27,30 @@ public class CardPspServiceImpl implements CardPspService {
     private final CardPspRepository cardPspRepository;
     private final CardPspIdempotencyRepository cardPspIdempotencyRepository;
 
+    private boolean isValidLuhn(String cardNumber) {
+        if (cardNumber == null) return false;
+        String digits = cardNumber.replaceAll("\\D", "");
+        if (digits.length() != 16) return false;
+        int sum = 0;
+        boolean shouldDouble = false;
+        for (int i = digits.length() - 1; i >= 0; i--) {
+            int digit = Character.getNumericValue(digits.charAt(i));
+            if (shouldDouble) {
+                digit *= 2;
+                if (digit > 9) digit -= 9;
+            }
+            sum += digit;
+            shouldDouble = !shouldDouble;
+        }
+        return sum % 10 == 0;
+    }
+
     @Override
     @Transactional
     public VerifyCardResponse verifyCard(VerifyCardRequest request) {
+        if (!isValidLuhn(request.cardNumber())) {
+            throw new CustomException("INVALID_CARD_NUMBER", "Card number failed Luhn checksum validation");
+        }
 
         CardPsp cardPsp = cardPspRepository
                 .findByCardNumberAndExpiryMonthAndExpiryYearAndIsActiveTrue(

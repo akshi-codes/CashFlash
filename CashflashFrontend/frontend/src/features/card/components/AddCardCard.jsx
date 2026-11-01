@@ -91,6 +91,23 @@ export function AddCardCard({ onClose, onSuccess }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successProvider, setSuccessProvider] = useState("");
 
+  const isValidLuhn = (num) => {
+    if (!num) return false;
+    const digits = num.replace(/\D/g, "");
+    if (digits.length !== 16) return false;
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = digits.length - 1; i >= 0; i--) {
+      let digit = parseInt(digits.charAt(i), 10);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  };
   const detectCardProvider = (number) => {
     if (!number) return "";
 
@@ -172,6 +189,7 @@ export function AddCardCard({ onClose, onSuccess }) {
 
   const isFormValid =
     form.cardNumber.length === 16 &&
+    isValidLuhn(form.cardNumber) &&
     form.expiryMonth.length === 2 &&
     Number(form.expiryMonth) >= 1 &&
     Number(form.expiryMonth) <= 12 &&
@@ -313,6 +331,9 @@ export function AddCardCard({ onClose, onSuccess }) {
             placeholder="Enter card number"
             disabled={loading || showSuccess}
           />
+          {form.cardNumber.length === 16 && !isValidLuhn(form.cardNumber) && (
+            <p className="text-xs text-red-500">Invalid card number checksum (Luhn check failed)</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
