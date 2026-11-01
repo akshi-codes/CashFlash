@@ -58,3 +58,7 @@ coverage/
 *.key
 .git-metadata/
 **/uploads/
+
+# Seed files
+*seed*.sql
+
